@@ -10,6 +10,8 @@ export interface Pokemon {
   en: string;
   types: PokemonType[];
   gen: number;
+  /** Height in decimeters. */
+  h: number;
 }
 
 export const TYPES: { id: PokemonType; name: string }[] = data.types;
@@ -23,6 +25,29 @@ export function getPokemon(id: number): Pokemon | undefined {
 
 export function typeName(id: PokemonType): string {
   return TYPES.find(t => t.id === id)?.name ?? id;
+}
+
+export type SizeClass = 'small' | 'medium' | 'large';
+
+/** Field sprite size in px for each size class. */
+export const SPRITE_SIZES: Record<SizeClass, number> = {
+  small: 56,
+  medium: 76,
+  large: 100,
+};
+
+/** Up to 0.6 m is small, up to 1.4 m is medium, anything taller is large. */
+export function sizeClass(heightDm: number): SizeClass {
+  if (heightDm <= 6) {
+    return 'small';
+  }
+  return heightDm <= 14 ? 'medium' : 'large';
+}
+
+/** How big a Pokémon is drawn on the field. */
+export function spriteSize(id: number): number {
+  const p = getPokemon(id);
+  return SPRITE_SIZES[p ? sizeClass(p.h) : 'medium'];
 }
 
 /** Cries available as alarm sounds. Only Generation 1 for now. */

@@ -10,10 +10,9 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { PokemonSprite } from '../components/PokemonSprite';
+import { spriteSize } from '../data/pokemon';
 import { AlarmModule } from '../native/AlarmModule';
 import type { Behavior, Bounds } from './events';
-
-export const SPRITE_SIZE = 72;
 
 const WALK_SPEED = 45; // px per second
 const RUN_SPEED = 140;
@@ -34,6 +33,7 @@ const TRICKS: Trick[] = ['jump', 'spin', 'shake', 'grow'];
  * and does a trick with its cry when tapped. Positions are the sprite's bottom center.
  */
 export function RoamingPokemon({ pokemonId, bounds, behavior, start }: Props) {
+  const size = spriteSize(pokemonId);
   const x = useSharedValue(start.x * bounds.width);
   const y = useSharedValue(start.y * bounds.height);
   const facing = useSharedValue(1); // 1 = left (sprite default), -1 = right
@@ -55,8 +55,8 @@ export function RoamingPokemon({ pokemonId, bounds, behavior, start }: Props) {
   /** Walks or runs to a point and returns how long it takes. */
   const moveTo = useCallback(
     (tx: number, ty: number, speed: number) => {
-      const cx = clamp(tx, SPRITE_SIZE / 2, bounds.width - SPRITE_SIZE / 2);
-      const cy = clamp(ty, SPRITE_SIZE * 0.6, bounds.height);
+      const cx = clamp(tx, size / 2, bounds.width - size / 2);
+      const cy = clamp(ty, size * 0.6, bounds.height);
       const distance = Math.hypot(cx - x.value, cy - y.value);
       const duration = Math.max(300, (distance / speed) * 1000);
       if (Math.abs(cx - x.value) > 4) {
@@ -74,7 +74,7 @@ export function RoamingPokemon({ pokemonId, bounds, behavior, start }: Props) {
       );
       return duration;
     },
-    [bounds, facing, hop, x, y],
+    [bounds, facing, hop, size, x, y],
   );
 
   const stopMoving = useCallback(() => {
@@ -201,8 +201,8 @@ export function RoamingPokemon({ pokemonId, bounds, behavior, start }: Props) {
 
   const style = useAnimatedStyle(() => ({
     transform: [
-      { translateX: x.value - SPRITE_SIZE / 2 },
-      { translateY: y.value - SPRITE_SIZE + hop.value },
+      { translateX: x.value - size / 2 },
+      { translateY: y.value - size + hop.value },
     ],
     // Pokémon further down the screen are closer, so they draw on top.
     zIndex: Math.round(y.value),
@@ -221,7 +221,7 @@ export function RoamingPokemon({ pokemonId, bounds, behavior, start }: Props) {
       {emote && <Text style={styles.emote}>{emote}</Text>}
       <Pressable onPress={doTrick} hitSlop={8}>
         <Animated.View style={spriteStyle}>
-          <PokemonSprite pokemonId={pokemonId} size={SPRITE_SIZE} />
+          <PokemonSprite pokemonId={pokemonId} size={size} />
         </Animated.View>
       </Pressable>
     </Animated.View>

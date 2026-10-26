@@ -10,13 +10,13 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { PokemonSprite } from '../components/PokemonSprite';
+import { spriteSize } from '../data/pokemon';
 import {
   EVENT_DURATION_MS,
   EVENT_LABELS,
   type Bounds,
   type FieldEvent,
 } from './events';
-import { SPRITE_SIZE } from './RoamingPokemon';
 
 const ITEMS =
   'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items';
@@ -186,21 +186,22 @@ function WildPokemon({
   y: number;
   width: number;
 }) {
+  const size = spriteSize(pokemonId);
   // Walks in from the right edge, stays a while, then leaves the way it came.
-  const left = useSharedValue(width + SPRITE_SIZE);
+  const left = useSharedValue(width + size);
   useEffect(() => {
     const stay = EVENT_DURATION_MS.wild - 3600;
     left.value = withSequence(
-      withTiming(x - SPRITE_SIZE / 2, { duration: 1800 }),
-      withDelay(stay, withTiming(width + SPRITE_SIZE, { duration: 1800 })),
+      withTiming(x - size / 2, { duration: 1800 }),
+      withDelay(stay, withTiming(width + size, { duration: 1800 })),
     );
-  }, [left, width, x]);
+  }, [left, size, width, x]);
   const style = useAnimatedStyle(() => ({
-    transform: [{ translateX: left.value }, { translateY: y - SPRITE_SIZE }],
+    transform: [{ translateX: left.value }, { translateY: y - size }],
   }));
   return (
     <Animated.View style={[styles.item, style]}>
-      <PokemonSprite pokemonId={pokemonId} size={SPRITE_SIZE} />
+      <PokemonSprite pokemonId={pokemonId} size={size} />
     </Animated.View>
   );
 }

@@ -4,6 +4,8 @@ import {
   TYPES,
   filterPokemon,
   getPokemon,
+  sizeClass,
+  spriteSize,
   withSubjectParticle,
 } from '../src/data/pokemon';
 
@@ -22,6 +24,16 @@ describe('pokemon data', () => {
   it('limits alarm cries to Generation 1', () => {
     expect(CRY_POKEMON).toHaveLength(151);
     expect(CRY_POKEMON.at(-1)?.ko).toBe('뮤');
+  });
+});
+
+describe('sizeClass', () => {
+  it('splits Pokémon into small, medium and large by height', () => {
+    expect(sizeClass(getPokemon(25)!.h)).toBe('small'); // 0.4 m
+    expect(sizeClass(getPokemon(1)!.h)).toBe('medium'); // 0.7 m
+    expect(sizeClass(getPokemon(6)!.h)).toBe('large'); // 1.7 m
+    expect(spriteSize(95)).toBeGreaterThan(spriteSize(4));
+    expect(POKEMON.every(p => p.h > 0)).toBe(true);
   });
 });
 

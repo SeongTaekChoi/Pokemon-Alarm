@@ -1,11 +1,17 @@
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import { describeTimeUntil, formatTime, nextTrigger } from '../alarm/schedule';
 import { Field } from '../field/Field';
 import type { ScreenProps } from '../navigation';
 import { useAlarmStore } from '../store/alarmStore';
+
+/** Height of the bottom button row, which Pokémon stay out of. */
+const BUTTON_BAR = 76;
 
 function useNow(intervalMs = 1000) {
   const [now, setNow] = useState(() => new Date());
@@ -19,6 +25,7 @@ function useNow(intervalMs = 1000) {
 /** The field with roaming Pokémon. The floating clock opens the alarm list. */
 export function HomeScreen({ navigation }: ScreenProps<'Home'>) {
   const now = useNow();
+  const insets = useSafeAreaInsets();
   const alarms = useAlarmStore(s => s.alarms);
   const load = useAlarmStore(s => s.load);
 
@@ -35,10 +42,11 @@ export function HomeScreen({ navigation }: ScreenProps<'Home'>) {
 
   return (
     <View style={styles.container}>
-      <Field now={now} />
+      <Field now={now} reservedBottom={BUTTON_BAR + insets.bottom} />
       <SafeAreaView style={styles.overlay} pointerEvents="box-none">
         <Pressable
           style={styles.clock}
+          hitSlop={8}
           onPress={() => navigation.navigate('AlarmList')}
         >
           <Text style={styles.time}>
@@ -53,12 +61,14 @@ export function HomeScreen({ navigation }: ScreenProps<'Home'>) {
         <View style={styles.buttons} pointerEvents="box-none">
           <Pressable
             style={styles.button}
+            hitSlop={8}
             onPress={() => navigation.navigate('PokemonPicker')}
           >
             <Text style={styles.buttonText}>포켓몬</Text>
           </Pressable>
           <Pressable
             style={styles.button}
+            hitSlop={8}
             onPress={() => navigation.navigate('ScenePicker')}
           >
             <Text style={styles.buttonText}>배경</Text>
@@ -71,7 +81,7 @@ export function HomeScreen({ navigation }: ScreenProps<'Home'>) {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  overlay: { flex: 1, justifyContent: 'space-between' },
+  overlay: { flex: 1, justifyContent: 'space-between', zIndex: 10000 },
   clock: {
     alignSelf: 'center',
     marginTop: 40,
@@ -91,7 +101,9 @@ const styles = StyleSheet.create({
   buttons: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    padding: 16,
+    height: BUTTON_BAR,
+    alignItems: 'center',
+    paddingHorizontal: 16,
   },
   button: {
     backgroundColor: 'rgba(255,255,255,0.85)',

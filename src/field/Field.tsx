@@ -21,10 +21,12 @@ const HORIZON = 0.5;
 
 interface Props {
   now: Date;
+  /** Space at the bottom kept free for the home screen buttons. */
+  reservedBottom?: number;
 }
 
 /** The home screen field: scene, roaming Pokémon, and random events. */
-export function Field({ now }: Props) {
+export function Field({ now, reservedBottom = 0 }: Props) {
   const { fieldPokemon, scene, sceneByTime, sceneSchedule, randomEvents } =
     useSettingsStore();
   const [screen, setScreen] = useState<Bounds>({ width: 0, height: 0 });
@@ -36,9 +38,9 @@ export function Field({ now }: Props) {
   const ground = useMemo(
     () => ({
       width: screen.width,
-      height: screen.height - screen.height * HORIZON,
+      height: Math.max(0, screen.height * (1 - HORIZON) - reservedBottom),
     }),
-    [screen],
+    [reservedBottom, screen],
   );
 
   // Spread the starting spots so Pokémon don't stack on top of each other.
@@ -90,7 +92,13 @@ export function Field({ now }: Props) {
   }
 
   return (
-    <View style={StyleSheet.absoluteFill} onLayout={onLayout}>
+    // Not collapsable: if Android flattens these views, the Pokémon's zIndex would lift them
+    // above the home screen buttons.
+    <View
+      style={StyleSheet.absoluteFill}
+      onLayout={onLayout}
+      collapsable={false}
+    >
       {screen.width > 0 && (
         <>
           <SceneBackground
@@ -101,6 +109,7 @@ export function Field({ now }: Props) {
             horizon={HORIZON}
           />
           <View
+            collapsable={false}
             style={[
               styles.ground,
               { top: groundTop, width: ground.width, height: ground.height },
