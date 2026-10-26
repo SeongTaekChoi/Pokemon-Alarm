@@ -1,0 +1,59 @@
+# 포켓몬 알람
+
+포켓몬이 깨워 주는 안드로이드 알람 앱입니다. React Native 0.88 + Kotlin으로 만들었고, 본인 폰에 설치해서 쓰는 용도입니다.
+
+## 기능 (1단계)
+
+- 알람 여러 개: 시간, 특정 날짜 1회 또는 요일 반복
+- 알람 소리: 포켓몬 울음소리(1세대 151종, 타입 필터와 검색) 또는 폰 벨소리
+- 진동, 점점 크게, 다시 울림 (5분 울린 뒤 끄지 않으면 5분 뒤 다시, 최대 3번)
+- 화면이 꺼져 있거나 잠겨 있어도 전체 화면으로 울림
+- 재부팅, 시간대 변경 후 자동으로 다시 예약
+
+다음 단계: 포켓몬이 돌아다니는 홈 필드, 포켓몬과 배경 고르기, 랜덤 이벤트.
+
+## 구조
+
+| 위치 | 내용 |
+| --- | --- |
+| `android/app/src/main/java/com/seongtaek/pokealarm/alarm/` | 네이티브 알람 엔진. 예약(`AlarmScheduler`), 울림(`AlarmService`), 울림 화면(`AlarmActivity`), 재부팅 복구(`BootReceiver`), JS 연결(`AlarmModule`) |
+| `src/screens/` | 홈, 알람 목록, 알람 설정, 알람 소리 고르기, 권한 안내, 울림 화면 |
+| `src/data/pokemon.json` | 1,025종 한국어/영어 이름, 타입, 세대. `scripts/build-pokemon-data.mjs`로 PokeAPI CSV에서 생성 |
+
+알람 목록은 네이티브(SharedPreferences)에 저장되고, 앱이 꺼져 있어도 네이티브 코드만으로 울립니다.
+
+## 에셋
+
+포켓몬 이미지와 울음소리는 [PokeAPI](https://github.com/PokeAPI/pokeapi)에서 받아 씁니다. 저장소에는 파일을 넣지 않고, 알람을 저장할 때 울음소리를 폰에 내려받아 둡니다. 그래서 알람은 인터넷이 없어도 울립니다. 포켓몬 관련 저작권과 상표권은 Nintendo, Creatures, GAME FREAK, The Pokémon Company에 있습니다.
+
+## 실행
+
+준비: Node 22, JDK 17, Android Studio(Android SDK), USB 디버깅을 켠 폰.
+
+```sh
+npm install
+npm run android        # 폰을 연결한 상태에서 개발 빌드 설치 + 실행
+```
+
+APK만 만들려면:
+
+```sh
+cd android && ./gradlew assembleDebug
+adb install app/build/outputs/apk/debug/app-debug.apk
+```
+
+GitHub Actions에서도 PR마다 디버그 APK를 만들어 Artifacts에 올립니다.
+
+처음 실행하면 알람 목록 위에 권한 안내가 뜹니다. 알림, 정확한 알람, 전체 화면 알림을 모두 켜 주세요.
+
+## 테스트
+
+```sh
+npx tsc --noEmit && npm run lint && npm test
+```
+
+절전 상태에서 울리는지 확인하려면 알람을 1~2분 뒤로 맞추고 화면을 끈 다음:
+
+```sh
+adb shell dumpsys deviceidle force-idle
+```
