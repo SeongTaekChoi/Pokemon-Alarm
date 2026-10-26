@@ -11,6 +11,8 @@ import {
   View,
 } from 'react-native';
 import { Chip } from '../components/Chip';
+import { StarButton } from '../components/StarButton';
+import { favoritesFirst, soundKey } from '../data/favorites';
 import { CHIPTUNES, chiptuneUri, isChiptuneUri } from '../data/chiptunes';
 import {
   CRY_POKEMON,
@@ -21,6 +23,7 @@ import {
 import { AlarmModule } from '../native/AlarmModule';
 import type { ScreenProps } from '../navigation';
 import { useDraftStore } from '../store/alarmStore';
+import { useSettingsStore } from '../store/settingsStore';
 import { TYPE_COLORS, colors } from '../theme';
 import type { AlarmSound, Ringtone } from '../types';
 
@@ -112,6 +115,16 @@ export function SoundPickerScreen({ navigation }: ScreenProps<'SoundPicker'>) {
   );
 }
 
+function useFavoriteSounds() {
+  const favorites = useSettingsStore(s => s.favoriteSounds);
+  const toggle = useSettingsStore(s => s.toggleFavoriteSound);
+  return {
+    favorites,
+    isFavorite: (key: string) => favorites.includes(key),
+    toggle,
+  };
+}
+
 function initialTab(sound: AlarmSound | undefined): Tab {
   if (!sound) {
     return 'cry';
@@ -143,9 +156,10 @@ function CryList(props: {
 }) {
   const [query, setQuery] = useState('');
   const [type, setType] = useState<string | null>(null);
-  const results = useMemo(
-    () => filterPokemon(CRY_POKEMON, { query, type }),
-    [query, type],
+  const { isFavorite, toggle } = useFavoriteSounds();
+  const results = favoritesFirst(
+    useMemo(() => filterPokemon(CRY_POKEMON, { query, type }), [query, type]),
+    p => isFavorite(soundKey('cry', p.id)),
   );
 
   return (
@@ -202,6 +216,10 @@ function CryList(props: {
                 {item.types.map(typeName).join(' · ')}
               </Text>
             </View>
+            <StarButton
+              starred={isFavorite(soundKey('cry', item.id))}
+              onPress={() => toggle(soundKey('cry', item.id))}
+            />
             <PreviewButton
               playing={props.playing === `cry:${item.id}`}
               onPress={() => props.onPreview(item.id)}
@@ -219,9 +237,13 @@ function ChiptuneList(props: {
   onPreview(uri: string): void;
   onSelect(uri: string, title: string): void;
 }) {
+  const { isFavorite, toggle } = useFavoriteSounds();
+  const tracks = favoritesFirst(CHIPTUNES, t =>
+    isFavorite(soundKey('ringtone', chiptuneUri(t.id))),
+  );
   return (
     <FlatList
-      data={CHIPTUNES}
+      data={tracks}
       keyExtractor={t => t.id}
       contentContainerStyle={styles.listTop}
       ListFooterComponent={
@@ -239,6 +261,10 @@ function ChiptuneList(props: {
               <Text style={styles.name}>{item.title}</Text>
               <Text style={styles.meta}>{item.mood}</Text>
             </View>
+            <StarButton
+              starred={isFavorite(soundKey('ringtone', uri))}
+              onPress={() => toggle(soundKey('ringtone', uri))}
+            />
             <PreviewButton
               playing={props.playing === `ringtone:${uri}`}
               onPress={() => props.onPreview(uri)}
@@ -258,6 +284,7 @@ function RingtoneList(props: {
 }) {
   const [ringtones, setRingtones] = useState<Ringtone[] | null>(null);
   const [query, setQuery] = useState('');
+  const { favorites: favoriteKeys, toggle } = useFavoriteSounds();
 
   useEffect(() => {
     AlarmModule.listRingtones()
@@ -269,11 +296,19 @@ function RingtoneList(props: {
     const q = query.trim().toLowerCase();
     const match = (r: Ringtone) => !q || r.title.toLowerCase().includes(q);
     const list = (ringtones ?? []).filter(match);
+    const starred = (r: Ringtone) =>
+      favoriteKeys.includes(soundKey('ringtone', r.uri));
+    // A ringtone can be listed in both groups; show a favorite only once, at the top.
+    const favorites = list.filter(
+      (r, i) => starred(r) && list.findIndex(o => o.uri === r.uri) === i,
+    );
+    const rest = list.filter(r => !starred(r));
     return [
-      { title: '알람음', data: list.filter(r => r.group === 'alarm') },
-      { title: '벨소리', data: list.filter(r => r.group === 'ringtone') },
+      { title: '★ 즐겨찾기', data: favorites },
+      { title: '알람음', data: rest.filter(r => r.group === 'alarm') },
+      { title: '벨소리', data: rest.filter(r => r.group === 'ringtone') },
     ].filter(s => s.data.length > 0);
-  }, [ringtones, query]);
+  }, [ringtones, query, favoriteKeys]);
 
   return (
     <>
@@ -287,7 +322,7 @@ function RingtoneList(props: {
       </View>
       <SectionList
         sections={sections}
-        keyExtractor={r => r.uri}
+        keyExtractor={(r, i) => `${r.uri}:${i}`}
         ListEmptyComponent={
           <Text style={styles.empty}>
             {ringtones ? '찾는 소리가 없어요' : '불러오는 중…'}
@@ -305,6 +340,10 @@ function RingtoneList(props: {
             onPress={() => props.onSelect(item)}
           >
             <Text style={[styles.name, styles.flex]}>{item.title}</Text>
+            <StarButton
+              starred={favoriteKeys.includes(soundKey('ringtone', item.uri))}
+              onPress={() => toggle(soundKey('ringtone', item.uri))}
+            />
             <PreviewButton
               playing={props.playing === `ringtone:${item.uri}`}
               onPress={() => props.onPreview(item)}

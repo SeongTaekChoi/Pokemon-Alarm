@@ -11,6 +11,8 @@ import {
   View,
 } from 'react-native';
 import { Chip } from '../components/Chip';
+import { StarButton } from '../components/StarButton';
+import { favoritesFirst } from '../data/favorites';
 import {
   POKEMON,
   TYPES,
@@ -25,12 +27,20 @@ const COLUMNS = 4;
 
 /** Picks up to 20 Pokémon for the home field, with type filter and search over all 1,025. */
 export function PokemonPickerScreen() {
-  const { fieldPokemon, setFieldPokemon } = useSettingsStore();
+  const {
+    fieldPokemon,
+    setFieldPokemon,
+    favoritePokemon,
+    toggleFavoritePokemon,
+  } = useSettingsStore();
   const [query, setQuery] = useState('');
   const [type, setType] = useState<string | null>(null);
   const results = useMemo(
-    () => filterPokemon(POKEMON, { query, type }),
-    [query, type],
+    () =>
+      favoritesFirst(filterPokemon(POKEMON, { query, type }), p =>
+        favoritePokemon.includes(p.id),
+      ),
+    [favoritePokemon, query, type],
   );
 
   function toggle(id: number) {
@@ -121,6 +131,13 @@ export function PokemonPickerScreen() {
               </Text>
               <Text style={styles.number}>No.{item.id}</Text>
               {selected && <Text style={styles.check}>✓</Text>}
+              <View style={styles.star}>
+                <StarButton
+                  size={18}
+                  starred={favoritePokemon.includes(item.id)}
+                  onPress={() => toggleFavoritePokemon(item.id)}
+                />
+              </View>
             </Pressable>
           );
         }}
@@ -179,5 +196,6 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontWeight: '800',
   },
+  star: { position: 'absolute', top: 2, left: 0 },
   empty: { textAlign: 'center', color: colors.muted, marginTop: 48 },
 });
