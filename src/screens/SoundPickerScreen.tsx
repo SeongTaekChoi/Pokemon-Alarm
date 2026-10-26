@@ -11,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import { Chip } from '../components/Chip';
+import { CHIPTUNES, chiptuneUri, isChiptuneUri } from '../data/chiptunes';
 import {
   CRY_POKEMON,
   filterPokemon,
@@ -23,13 +24,13 @@ import { useDraftStore } from '../store/alarmStore';
 import { TYPE_COLORS, colors } from '../theme';
 import type { AlarmSound, Ringtone } from '../types';
 
-type Tab = 'cry' | 'ringtone';
+type Tab = 'cry' | 'chip' | 'ringtone';
 
 const CRY_TYPES = [...new Set(CRY_POKEMON.flatMap(p => p.types))];
 
 export function SoundPickerScreen({ navigation }: ScreenProps<'SoundPicker'>) {
   const { draft, update } = useDraftStore();
-  const [tab, setTab] = useState<Tab>(draft?.sound.kind ?? 'cry');
+  const [tab, setTab] = useState<Tab>(() => initialTab(draft?.sound));
   const [playing, setPlaying] = useState<string | null>(null);
 
   useEffect(
@@ -48,7 +49,11 @@ export function SoundPickerScreen({ navigation }: ScreenProps<'SoundPicker'>) {
     navigation.goBack();
   }
 
-  async function togglePreview(key: string, kind: Tab, value: string) {
+  async function togglePreview(
+    key: string,
+    kind: 'cry' | 'ringtone',
+    value: string,
+  ) {
     if (playing === key) {
       setPlaying(null);
       await AlarmModule.stopPreview();
@@ -62,9 +67,14 @@ export function SoundPickerScreen({ navigation }: ScreenProps<'SoundPicker'>) {
     <View style={styles.container}>
       <View style={styles.tabs}>
         <TabButton
-          label="포켓몬 울음소리"
+          label="울음소리"
           active={tab === 'cry'}
           onPress={() => setTab('cry')}
+        />
+        <TabButton
+          label="8비트 음악"
+          active={tab === 'chip'}
+          onPress={() => setTab('chip')}
         />
         <TabButton
           label="폰 벨소리"
@@ -72,14 +82,23 @@ export function SoundPickerScreen({ navigation }: ScreenProps<'SoundPicker'>) {
           onPress={() => setTab('ringtone')}
         />
       </View>
-      {tab === 'cry' ? (
+      {tab === 'cry' && (
         <CryList
           selected={draft?.sound.kind === 'cry' ? draft.sound.pokemonId : null}
           playing={playing}
           onPreview={id => togglePreview(`cry:${id}`, 'cry', String(id))}
           onSelect={id => select({ kind: 'cry', pokemonId: id })}
         />
-      ) : (
+      )}
+      {tab === 'chip' && (
+        <ChiptuneList
+          selected={draft?.sound.kind === 'ringtone' ? draft.sound.uri : null}
+          playing={playing}
+          onPreview={uri => togglePreview(`ringtone:${uri}`, 'ringtone', uri)}
+          onSelect={(uri, title) => select({ kind: 'ringtone', uri, title })}
+        />
+      )}
+      {tab === 'ringtone' && (
         <RingtoneList
           selected={draft?.sound.kind === 'ringtone' ? draft.sound.uri : null}
           playing={playing}
@@ -91,6 +110,16 @@ export function SoundPickerScreen({ navigation }: ScreenProps<'SoundPicker'>) {
       )}
     </View>
   );
+}
+
+function initialTab(sound: AlarmSound | undefined): Tab {
+  if (!sound) {
+    return 'cry';
+  }
+  if (sound.kind === 'ringtone' && isChiptuneUri(sound.uri)) {
+    return 'chip';
+  }
+  return sound.kind;
 }
 
 function TabButton(props: { label: string; active: boolean; onPress(): void }) {
@@ -181,6 +210,43 @@ function CryList(props: {
         )}
       />
     </>
+  );
+}
+
+function ChiptuneList(props: {
+  selected: string | null;
+  playing: string | null;
+  onPreview(uri: string): void;
+  onSelect(uri: string, title: string): void;
+}) {
+  return (
+    <FlatList
+      data={CHIPTUNES}
+      keyExtractor={t => t.id}
+      contentContainerStyle={styles.listTop}
+      ListFooterComponent={
+        <Text style={styles.footnote}>이 앱을 위해 직접 만든 곡이에요</Text>
+      }
+      renderItem={({ item }) => {
+        const uri = chiptuneUri(item.id);
+        return (
+          <Pressable
+            style={[styles.row, props.selected === uri && styles.rowSelected]}
+            onPress={() => props.onSelect(uri, item.title)}
+          >
+            <Text style={styles.chipIcon}>🎮</Text>
+            <View style={styles.flex}>
+              <Text style={styles.name}>{item.title}</Text>
+              <Text style={styles.meta}>{item.mood}</Text>
+            </View>
+            <PreviewButton
+              playing={props.playing === `ringtone:${uri}`}
+              onPress={() => props.onPreview(uri)}
+            />
+          </Pressable>
+        );
+      }}
+    />
   );
 }
 
@@ -294,6 +360,14 @@ const styles = StyleSheet.create({
   },
   rowSelected: { borderWidth: 2, borderColor: colors.primary },
   sprite: { width: 48, height: 48, marginRight: 8 },
+  listTop: { paddingTop: 12 },
+  chipIcon: { fontSize: 28, width: 48, textAlign: 'center', marginRight: 8 },
+  footnote: {
+    textAlign: 'center',
+    color: colors.muted,
+    fontSize: 12,
+    marginTop: 8,
+  },
   flex: { flex: 1 },
   name: { fontSize: 16, color: colors.text },
   number: { color: colors.muted, fontSize: 13 },
