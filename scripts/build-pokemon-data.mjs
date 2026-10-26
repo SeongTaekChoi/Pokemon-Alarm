@@ -1,4 +1,4 @@
-// Builds src/data/pokemon.json from a local PokeAPI checkout.
+// Builds src/data/pokemon-data.json from a local PokeAPI checkout.
 // Usage: node scripts/build-pokemon-data.mjs <path-to-pokeapi>/data/v2/csv
 import fs from 'node:fs';
 import path from 'node:path';
@@ -101,7 +101,7 @@ for (let id = 1; id <= MAX_ID; id++) {
 
 const out = path.join(
   path.dirname(new URL(import.meta.url).pathname),
-  '../src/data/pokemon.json',
+  '../src/data/pokemon-data.json',
 );
 fs.writeFileSync(out, JSON.stringify({ types, pokemon }));
 console.log(

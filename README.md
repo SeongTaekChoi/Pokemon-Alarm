@@ -18,7 +18,7 @@
 | --- | --- |
 | `android/app/src/main/java/com/seongtaek/pokealarm/alarm/` | 네이티브 알람 엔진. 예약(`AlarmScheduler`), 울림(`AlarmService`), 울림 화면(`AlarmActivity`), 재부팅 복구(`BootReceiver`), JS 연결(`AlarmModule`) |
 | `src/screens/` | 홈, 알람 목록, 알람 설정, 알람 소리 고르기, 권한 안내, 울림 화면 |
-| `src/data/pokemon.json` | 1,025종 한국어/영어 이름, 타입, 세대. `scripts/build-pokemon-data.mjs`로 PokeAPI CSV에서 생성 |
+| `src/data/pokemon-data.json` | 1,025종 한국어/영어 이름, 타입, 세대. `scripts/build-pokemon-data.mjs`로 PokeAPI CSV에서 생성 |
 
 알람 목록은 네이티브(SharedPreferences)에 저장되고, 앱이 꺼져 있어도 네이티브 코드만으로 울립니다.
 
