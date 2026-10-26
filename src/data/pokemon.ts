@@ -1,4 +1,5 @@
-import data from './pokemon.json';
+// Not named pokemon.json: Metro resolves '.json' before '.ts', so '../data/pokemon' would load it.
+import data from './pokemon-data.json';
 
 export type PokemonType = string;
 
