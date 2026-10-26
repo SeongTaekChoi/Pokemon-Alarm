@@ -9,6 +9,8 @@ import { AlarmEditScreen } from './src/screens/AlarmEditScreen';
 import { AlarmListScreen } from './src/screens/AlarmListScreen';
 import { HomeScreen } from './src/screens/HomeScreen';
 import { PermissionsScreen } from './src/screens/PermissionsScreen';
+import { PokemonPickerScreen } from './src/screens/PokemonPickerScreen';
+import { ScenePickerScreen } from './src/screens/ScenePickerScreen';
 import { SoundPickerScreen } from './src/screens/SoundPickerScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -43,6 +45,16 @@ export default function App() {
               name="Permissions"
               component={PermissionsScreen}
               options={{ title: '권한 확인' }}
+            />
+            <Stack.Screen
+              name="PokemonPicker"
+              component={PokemonPickerScreen}
+              options={{ title: '필드의 포켓몬' }}
+            />
+            <Stack.Screen
+              name="ScenePicker"
+              component={ScenePickerScreen}
+              options={{ title: '배경' }}
             />
           </Stack.Navigator>
         </NavigationContainer>

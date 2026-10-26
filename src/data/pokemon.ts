@@ -35,6 +35,11 @@ export function animatedSpriteUrl(id: number): string {
   return `${SPRITES}/other/showdown/${id}.gif`;
 }
 
+/** Small still sprite, for lists. */
+export function staticSpriteUrl(id: number): string {
+  return `${SPRITES}/${id}.png`;
+}
+
 export function artworkUrl(id: number): string {
   return `${SPRITES}/other/official-artwork/${id}.png`;
 }

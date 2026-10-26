@@ -11,7 +11,12 @@ import {
   View,
 } from 'react-native';
 import { Chip } from '../components/Chip';
-import { CRY_POKEMON, filterPokemon, typeName } from '../data/pokemon';
+import {
+  CRY_POKEMON,
+  filterPokemon,
+  staticSpriteUrl,
+  typeName,
+} from '../data/pokemon';
 import { AlarmModule } from '../native/AlarmModule';
 import type { ScreenProps } from '../navigation';
 import { useDraftStore } from '../store/alarmStore';
@@ -21,10 +26,6 @@ import type { AlarmSound, Ringtone } from '../types';
 type Tab = 'cry' | 'ringtone';
 
 const CRY_TYPES = [...new Set(CRY_POKEMON.flatMap(p => p.types))];
-
-function smallSpriteUrl(id: number) {
-  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
-}
 
 export function SoundPickerScreen({ navigation }: ScreenProps<'SoundPicker'>) {
   const { draft, update } = useDraftStore();
@@ -160,7 +161,7 @@ function CryList(props: {
             onPress={() => props.onSelect(item.id)}
           >
             <Image
-              source={{ uri: smallSpriteUrl(item.id) }}
+              source={{ uri: staticSpriteUrl(item.id) }}
               style={styles.sprite}
             />
             <View style={styles.flex}>
