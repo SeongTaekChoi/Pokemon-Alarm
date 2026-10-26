@@ -42,14 +42,14 @@ npm install
 npm run android        # 폰을 연결한 상태에서 개발 빌드 설치 + 실행
 ```
 
-APK만 만들려면:
+PC 없이 단독으로 실행되는 APK를 만들려면 (JS가 APK 안에 들어감):
 
 ```sh
-cd android && ./gradlew assembleDebug
-adb install app/build/outputs/apk/debug/app-debug.apk
+cd android && ./gradlew assembleRelease
+adb install app/build/outputs/apk/release/app-release.apk
 ```
 
-GitHub Actions에서도 PR마다 디버그 APK를 만들어 Artifacts에 올립니다.
+GitHub Actions도 PR마다 이 APK(`pokealarm-apk`)를 만들어 실행 화면 아래 Artifacts에 올립니다.
 
 처음 실행하면 알람 목록 위에 권한 안내가 뜹니다. 알림, 정확한 알람, 전체 화면 알림을 모두 켜 주세요.
 
