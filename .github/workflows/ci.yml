@@ -33,10 +33,12 @@ jobs:
           java-version: 17
       - uses: gradle/actions/setup-gradle@v4
       - run: npm ci
-      - name: Build debug APK
+      # Release bundles the JS, so the APK runs on a phone without a dev server. It is signed with
+      # the debug key, which is fine for installing on your own phone.
+      - name: Build release APK
         working-directory: android
-        run: ./gradlew assembleDebug --no-daemon -PreactNativeArchitectures=arm64-v8a
+        run: ./gradlew assembleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a
       - uses: actions/upload-artifact@v4
         with:
-          name: pokealarm-debug-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: pokealarm-apk
+          path: android/app/build/outputs/apk/release/app-release.apk
