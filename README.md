@@ -18,7 +18,7 @@
 | --- | --- |
 | `android/app/src/main/java/com/seongtaek/pokealarm/alarm/` | 네이티브 알람 엔진. 예약(`AlarmScheduler`), 울림(`AlarmService`), 울림 화면(`AlarmActivity`), 재부팅 복구(`BootReceiver`), JS 연결(`AlarmModule`) |
 | `src/screens/` | 홈, 알람 목록, 알람 설정, 알람 소리 고르기, 권한 안내, 울림 화면 |
-| `src/data/pokemon.json` | 1,025종 한국어/영어 이름, 타입, 세대. `scripts/build-pokemon-data.mjs`로 PokeAPI CSV에서 생성 |
+| `src/data/pokemon-data.json` | 1,025종 한국어/영어 이름, 타입, 세대. `scripts/build-pokemon-data.mjs`로 PokeAPI CSV에서 생성 |
 
 알람 목록은 네이티브(SharedPreferences)에 저장되고, 앱이 꺼져 있어도 네이티브 코드만으로 울립니다.
 
@@ -35,14 +35,14 @@ npm install
 npm run android        # 폰을 연결한 상태에서 개발 빌드 설치 + 실행
 ```
 
-APK만 만들려면:
+PC 없이 단독으로 실행되는 APK를 만들려면 (JS가 APK 안에 들어감):
 
 ```sh
-cd android && ./gradlew assembleDebug
-adb install app/build/outputs/apk/debug/app-debug.apk
+cd android && ./gradlew assembleRelease
+adb install app/build/outputs/apk/release/app-release.apk
 ```
 
-GitHub Actions에서도 PR마다 디버그 APK를 만들어 Artifacts에 올립니다.
+GitHub Actions도 PR마다 이 APK(`pokealarm-apk`)를 만들어 실행 화면 아래 Artifacts에 올립니다.
 
 처음 실행하면 알람 목록 위에 권한 안내가 뜹니다. 알림, 정확한 알람, 전체 화면 알림을 모두 켜 주세요.
 
