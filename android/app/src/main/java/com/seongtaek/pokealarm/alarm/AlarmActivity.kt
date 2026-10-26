@@ -29,7 +29,8 @@ class AlarmActivity : ReactActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     showOverLockScreen()
-    super.onCreate(savedInstanceState)
+    // react-native-screens: fragments must not be restored.
+    super.onCreate(null)
     if (RingingState.current == null) {
       finish()
       return
