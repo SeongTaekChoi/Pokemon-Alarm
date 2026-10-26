@@ -10,6 +10,8 @@ export interface Pokemon {
   en: string;
   types: PokemonType[];
   gen: number;
+  /** Height in decimeters. */
+  h: number;
 }
 
 export const TYPES: { id: PokemonType; name: string }[] = data.types;
@@ -25,6 +27,29 @@ export function typeName(id: PokemonType): string {
   return TYPES.find(t => t.id === id)?.name ?? id;
 }
 
+export type SizeClass = 'small' | 'medium' | 'large';
+
+/** Field sprite size in px for each size class. */
+export const SPRITE_SIZES: Record<SizeClass, number> = {
+  small: 56,
+  medium: 76,
+  large: 100,
+};
+
+/** Up to 0.6 m is small, up to 1.4 m is medium, anything taller is large. */
+export function sizeClass(heightDm: number): SizeClass {
+  if (heightDm <= 6) {
+    return 'small';
+  }
+  return heightDm <= 14 ? 'medium' : 'large';
+}
+
+/** How big a Pokémon is drawn on the field. */
+export function spriteSize(id: number): number {
+  const p = getPokemon(id);
+  return SPRITE_SIZES[p ? sizeClass(p.h) : 'medium'];
+}
+
 /** Cries available as alarm sounds. Only Generation 1 for now. */
 export const CRY_POKEMON: Pokemon[] = POKEMON.filter(p => p.gen === 1);
 
@@ -34,6 +59,11 @@ const SPRITES =
 /** Animated Showdown GIF. Some Generation 9 Pokémon have none; fall back to artworkUrl. */
 export function animatedSpriteUrl(id: number): string {
   return `${SPRITES}/other/showdown/${id}.gif`;
+}
+
+/** Small still sprite, for lists. */
+export function staticSpriteUrl(id: number): string {
+  return `${SPRITES}/${id}.png`;
 }
 
 export function artworkUrl(id: number): string {

@@ -88,6 +88,12 @@ for (const s of readCsv('pokemon_species.csv')) {
   generation[Number(s.id)] = Number(s.generation_id);
 }
 
+// Height in decimeters, from the default form.
+const height = {};
+for (const p of readCsv('pokemon.csv')) {
+  if (p.is_default === '1') height[Number(p.species_id)] = Number(p.height);
+}
+
 const pokemon = [];
 for (let id = 1; id <= MAX_ID; id++) {
   pokemon.push({
@@ -96,6 +102,7 @@ for (let id = 1; id <= MAX_ID; id++) {
     en: names[id].en,
     types: speciesTypes[id].filter(Boolean),
     gen: generation[id],
+    h: height[id],
   });
 }
 

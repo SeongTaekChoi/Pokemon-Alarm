@@ -13,6 +13,9 @@ import { formatTime } from '../alarm/schedule';
 import { PokemonSprite } from '../components/PokemonSprite';
 import { getPokemon, withSubjectParticle } from '../data/pokemon';
 import { AlarmModule, RingingInfo } from '../native/AlarmModule';
+import { SceneBackground } from '../field/SceneBackground';
+import { timeOfDay } from '../field/scenes';
+import { useSettingsStore } from '../store/settingsStore';
 import { colors } from '../theme';
 import type { Alarm } from '../types';
 
@@ -59,10 +62,27 @@ export function RingingScreen({ alarmId }: Props) {
   const pokemonId = alarm?.pokemonId ?? 25;
   const pokemon = getPokemon(pokemonId);
   const attempt = ringing?.attempt ?? 0;
+  const { scene, sceneByTime, sceneSchedule } = useSettingsStore();
+  const time = timeOfDay(now);
+  const [size, setSize] = useState({ width: 0, height: 0 });
 
   return (
     <SafeAreaProvider>
       <StatusBar barStyle="light-content" />
+      <View
+        style={StyleSheet.absoluteFill}
+        onLayout={e => setSize(e.nativeEvent.layout)}
+      >
+        {size.width > 0 && (
+          <SceneBackground
+            scene={sceneByTime ? sceneSchedule[time] : scene}
+            time={time}
+            width={size.width}
+            height={size.height}
+            horizon={0.62}
+          />
+        )}
+      </View>
       <SafeAreaView style={styles.container}>
         <View style={styles.top}>
           <Text style={styles.time}>
@@ -92,12 +112,18 @@ export function RingingScreen({ alarmId }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.accentDark,
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: 32,
   },
-  top: { alignItems: 'center', marginTop: 32 },
+  top: {
+    alignItems: 'center',
+    marginTop: 32,
+    paddingHorizontal: 28,
+    paddingVertical: 12,
+    borderRadius: 24,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+  },
   time: {
     fontSize: 80,
     fontWeight: '700',
@@ -107,7 +133,13 @@ const styles = StyleSheet.create({
   label: { fontSize: 20, color: '#FFFFFF', marginTop: 4 },
   retry: { fontSize: 14, color: colors.accent, marginTop: 8 },
   pokemon: { alignItems: 'center' },
-  name: { color: '#FFFFFF', fontSize: 16 },
+  name: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '700',
+    textShadowColor: 'rgba(0,0,0,0.6)',
+    textShadowRadius: 4,
+  },
   dismiss: {
     width: '80%',
     backgroundColor: colors.accent,

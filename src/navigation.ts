@@ -6,6 +6,8 @@ export type RootStackParamList = {
   AlarmEdit: { alarmId?: string };
   SoundPicker: undefined;
   Permissions: undefined;
+  PokemonPicker: undefined;
+  ScenePicker: undefined;
 };
 
 export type ScreenProps<T extends keyof RootStackParamList> =
